@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "ZCIbQK2y6VWnulBEjKSCe1iwcyFVPRYPn+YCkWzpxz4=",
+  "Source": "SampleCrud",
+  "BasePath": "_content/SampleCrud",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}

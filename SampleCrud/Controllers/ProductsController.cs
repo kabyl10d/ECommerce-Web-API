@@ -21,6 +21,10 @@ namespace SampleCrud.Controllers
             _productRepository = productRepository;
         }
 
+        /// <summary>
+        /// Get all products.
+        /// </summary>
+        /// <returns>List of all products.</returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
@@ -28,6 +32,11 @@ namespace SampleCrud.Controllers
             return Ok(await _productRepository.GetAllProducts());
         }
 
+        /// <summary>
+        /// Get product by ID.
+        /// </summary>
+        /// <param name="Productid">Product ID.</param>
+        /// <returns>Product details.</returns>
         [Authorize]
         [HttpGet]
         [Route("{Productid:guid}")]
@@ -41,6 +50,11 @@ namespace SampleCrud.Controllers
             return Ok(product);
         }
 
+        /// <summary>
+        /// Get product by name.
+        /// </summary>
+        /// <param name="ProductName">Product name.</param>
+        /// <returns>List of products with the specified name.</returns>
         [Authorize]
         [HttpGet]
         [Route("{ProductName}")]
@@ -54,6 +68,11 @@ namespace SampleCrud.Controllers
             return Ok(products);
         }
 
+        /// <summary>
+        /// Get products by category.
+        /// </summary>
+        /// <param name="category">Product category.</param>
+        /// <returns>List of products in the specified category.</returns>
         [Authorize]
         [HttpGet]
         [Route("Category")]
@@ -67,6 +86,11 @@ namespace SampleCrud.Controllers
             return Ok(products);
         }
 
+        /// <summary>
+        /// Search products by keyword.
+        /// </summary>
+        /// <param name="keyword">Search keyword.</param>
+        /// <returns>List of products matching the keyword.</returns>
         [Authorize]
         [HttpGet]
         [Route("Keyword")]
@@ -77,16 +101,25 @@ namespace SampleCrud.Controllers
             {
                 return NotFound();
             }
-             
+
             return Ok(products);
         }
 
-        [Authorize(Roles="merchant")]
+        /// <summary>
+        /// Add a new product.
+        /// </summary>
+        /// <param name="addProdDto">Product details.</param>
+        /// <returns>List of products after addition.</returns>
+        [Authorize(Roles = "merchant")]
         [HttpPost]
         public async Task<IActionResult> AddProduct(AddProductDto addProdDto)
         {
             string? username = User.FindFirst(ClaimTypes.Name)?.Value;
-            List<Product>? products = await _productRepository.AddProduct(username,addProdDto);
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Merchant isn't authorized.");
+            }
+            List<Product>? products = await _productRepository.AddProduct(username, addProdDto);
             if (products == null || products.Count == 0)
             {
                 return BadRequest("Product could not be added.");
@@ -94,27 +127,46 @@ namespace SampleCrud.Controllers
             return Ok(products);
         }
 
-        [Authorize(Roles = "merchant")] 
+        /// <summary>
+        /// Update an existing product.
+        /// </summary>
+        /// <param name="id">Product ID.</param>
+        /// <param name="updateProdDto">Updated product details.</param>
+        /// <returns>Updated product details.</returns>
+        [Authorize(Roles = "merchant")]
         [HttpPut]
         [Route("{id:guid}")]
         public async Task<IActionResult> UpdateProduct(Guid id, UpdateProductDto updateProdDto)
         {
             string? username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Merchant isn't authorized.");
+            }
             Product? product = await _productRepository.UpdateProduct(username, id, updateProdDto);
-            if(product == null)
+            if (product == null)
             {
                 return BadRequest("Product not updated.");
             }
             return Ok(product);
         }
 
+        /// <summary>
+        /// Delete a product.
+        /// </summary>
+        /// <param name="id">Product ID.</param>
+        /// <returns>Deletion status.</returns>
         [Authorize(Roles = "merchant,admin")]
         [HttpDelete]
         [Route("{id:guid}")]
         public async Task<IActionResult> DeleteProduct(Guid id)
         {
             string? username = User.FindFirst(ClaimTypes.Name)?.Value;
-            bool delStat = await _productRepository.DeleteProduct(username,id);
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Merchant isn't authorized.");
+            }
+            bool delStat = await _productRepository.DeleteProduct(username, id);
             if (!delStat)
             {
                 return BadRequest("Couldn't delete product.");
@@ -122,7 +174,13 @@ namespace SampleCrud.Controllers
             return Ok("Product deleted.");
         }
 
-        [Authorize(Roles = "merchant")] 
+        /// <summary>
+        /// Patch an existing product.
+        /// </summary>
+        /// <param name="id">Product ID.</param>
+        /// <param name="patchDoc">Patch document.</param>
+        /// <returns>Updated product details.</returns>
+        [Authorize(Roles = "merchant")]
         [HttpPatch("{id:guid}")]
         public async Task<IActionResult> PatchProduct(Guid id, [FromBody] JsonPatchDocument<Product> patchDoc)
         {

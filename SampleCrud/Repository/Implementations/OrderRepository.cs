@@ -36,6 +36,8 @@ namespace SampleCrud.Repository.Implementations
                         c.OrderId, 
                         c.CustomerId,
                         c.ProductId,
+                        c.Product.Name,
+                        c.Quantity,
                         c.TotalAmount,
                         c.PaymentMethod,
                         c.OrderDate,

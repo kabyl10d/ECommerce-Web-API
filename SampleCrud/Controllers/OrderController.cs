@@ -19,17 +19,16 @@ namespace SampleCrud.Controllers
             _orderRepository = orderRepository;
         }
 
-        /// <summary>
-        /// Retrieves the list of orders for the authenticated customer.
-        /// </summary>
-        /// <returns>A list of orders or a not found result if no orders are found.</returns>
-        /// <response code="200">Orders retrieved successfully</response>
-        /// <response code="404">No orders found</response>
+        
         [Authorize(Roles = "customer")]
         [HttpGet]
         public async Task<IActionResult> ViewOrders()
         {
             string? username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Customer isn't authorized.");
+            }
             List<object>? orders = await _orderRepository.ViewOrders(username);
             if (orders is null || !orders.Any())
             {
@@ -38,18 +37,16 @@ namespace SampleCrud.Controllers
             return Ok(orders);
         }
 
-        /// <summary>
-        /// Places a new order for the authenticated customer.
-        /// </summary>
-        /// <param name="addOrderDto">The order details.</param>
-        /// <returns>The list of orders after placing the new order or no content if the order could not be placed.</returns>
-        /// <response code="200">Order placed successfully</response>
-        /// <response code="204">Order could not be placed</response>
+         
         [Authorize(Roles = "customer")]
         [HttpPost]
         public async Task<IActionResult> PlaceOrder(AddOrderDto addOrderDto)
         {
             string? username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Customer isn't authorized.");
+            }
             ICollection<object>? orders = await _orderRepository.PlaceOrder(username, addOrderDto);
             if (orders is null)
             {
@@ -58,18 +55,16 @@ namespace SampleCrud.Controllers
             return Ok(orders);
         }
 
-        /// <summary>
-        /// Cancels an existing order for the authenticated customer.
-        /// </summary>
-        /// <param name="orderid">The ID of the order to cancel.</param>
-        /// <returns>A success message or a bad request result if the order could not be canceled.</returns>
-        /// <response code="200">Order cancelled successfully</response>
-        /// <response code="400">Cannot cancel order</response>
+         
         [Authorize(Roles = "customer")]
         [HttpDelete]
         public async Task<IActionResult> CancelOrder(int orderid)
         {
             string? username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Customer isn't authorized.");
+            }
             if (!(await _orderRepository.CancelOrder(username, orderid)))
             {
                 return BadRequest("Cannot cancel order.");
@@ -77,14 +72,7 @@ namespace SampleCrud.Controllers
             return Ok("Order cancelled successfully.");
         }
 
-        /// <summary>
-        /// Updates the status of an existing order for the authenticated customer.
-        /// </summary>
-        /// <param name="orderId">The ID of the order to update.</param>
-        /// <param name="patchDoc">The patch document containing the updates.</param>
-        /// <returns>The updated order status or a bad request result if the status could not be updated.</returns>
-        /// <response code="200">Order status updated successfully</response>
-        /// <response code="400">Can't update order status</response>
+        
         [Authorize(Roles = "customer")]
         [HttpPatch]
         //[Route("{id:int}")]
